@@ -134,10 +134,10 @@ module ActiveMerchant
           x.reverseAllParallelPaymentsOnError(
             opts[:reverse_all_parallel_payments_on_error] || 'false')
           x.trackingId opts[:tracking_id] if opts[:tracking_id]
-         end
+        end
       end
 
-    def build_adaptive_execute_payment_request(opts)
+      def build_adaptive_execute_payment_request(opts)
         @xml = ''
         xml = Builder::XmlMarkup.new :target => @xml, :indent => 2
         xml.instruct!
@@ -313,6 +313,19 @@ module ActiveMerchant
           # notify url
           x.ipnNotificationUrl opts[:notify_url] if
             opts.has_key?(:notify_url)
+          
+          # funding_types use any in %w[BALANCE CREDITCARD ECHECK]
+          if opts.key?(:funding_types) and opts[:funding_types].any?
+            x.fundingConstraint do |x|
+              x.allowedFundingType do |x|
+                opts[:funding_types].each do |type|
+                  x.fundingTypeInfo do |x|
+                    x.fundingType type
+                  end
+                end
+              end
+            end
+          end                    
         end
       end
 
